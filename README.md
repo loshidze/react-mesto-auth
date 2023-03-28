@@ -7,4 +7,4 @@
 Авторизация, добавление, удаление, лайки карточек.
 
 ## Ссылка на проект
-https://loshidze.github.io/mesto-react/
+https://loshidze.github.io/react-mesto-auth/
