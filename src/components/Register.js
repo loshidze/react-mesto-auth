@@ -1,36 +1,32 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useForm } from '../hooks/useForm';
 
 function Register({ onRegister }) {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+
+  const {values, handleChange, setValues} = useForm({});
+
+  React.useEffect(() => {
+    resetForm();
+  }, []);
+
 
   function resetForm() {
-    setPassword('');
-    setEmail('');
+    setValues('');
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    onRegister({password, email});
-    resetForm();
-  }
-
-  function handleChangeEmail(e) {
-    setEmail(e.target.value)
-  }
-
-  function handleChangePassword(e) {
-    setPassword(e.target.value)
+    onRegister(values);
   }
 
   return (
     <div className='auth'>
       <h2 className='auth__title'>Регистрация</h2>
-      <form className="auth__form" onSubmit={handleSubmit} action="#" noValidate>
+      <form className="auth__form" onSubmit={handleSubmit} action="#">
         <fieldset className='auth__fieldset'>
-          <input className="auth__input" value={email} onChange={handleChangeEmail} id="email" type="email" name="email" placeholder="Email" required/>
-          <input className="auth__input" value={password} onChange={handleChangePassword} id="password" type="password" name="password" placeholder="Пароль" required/>
+          <input className="auth__input" value={values.email || ''} onChange={handleChange} id="email" type="email" name="email" placeholder="Email" required/>
+          <input className="auth__input" value={values.password || ''} onChange={handleChange} id="password" type="password" name="password" placeholder="Пароль" required/>
           <button className="auth__button" type="submit">Зарегистрироваться</button>
           <Link to='/log-in' className='auth__link'>Уже зарегистрированы? Войти</Link>
         </fieldset>

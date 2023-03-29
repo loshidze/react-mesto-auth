@@ -27,6 +27,7 @@ function App() {
   const [cards, setCards] = React.useState([]);
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [userEmail, setUserEmail] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const navigate = useNavigate();
 
@@ -65,6 +66,23 @@ function App() {
     setSelectedCard({});
   }
 
+  const isOpen = isEditAvatarPopupOpen || isEditProfilePopupOpen || isAddPlacePopupOpen || selectedCard.link || isRegisteredPopupOpen
+
+  React.useEffect(() => {
+    function closeByEscape(evt) {
+      if(evt.key === 'Escape') {
+        closeAllPopups();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', closeByEscape);
+      return () => {
+        document.removeEventListener('keydown', closeByEscape);
+      }
+    }
+  }, [isOpen])
+
+
   function handleCardClick(card) {
     setSelectedCard(card)
   }
@@ -90,6 +108,7 @@ function App() {
   }
 
   function handleUpdateUser(data) {
+    setIsLoading(true);
     api.setProfileInfo(data)
       .then((res) => {
         setCurrentUser(res)
@@ -97,10 +116,14 @@ function App() {
       })
       .catch((err) => {
         console.log(err);
-      });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      })
   }
 
   function handleUpdateAvatar(data) {
+    setIsLoading(true);
     api.changeAvatar(data)
     .then((res) => {
       setCurrentUser(res)
@@ -108,10 +131,14 @@ function App() {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => {
+      setIsLoading(false);
+    })
   }
 
   function handleAddPlaceSubmit(data) {
+    setIsLoading(true);
     api.setCard(data)
     .then((res) => {
       setCards([res, ...cards])
@@ -119,7 +146,10 @@ function App() {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => {
+      setIsLoading(false);
+    })
   }
 
   function handleLogout() {
@@ -130,7 +160,7 @@ function App() {
   function tokenCheck() {
     if (localStorage.getItem('jwt')) {
       const jwt = localStorage.getItem('jwt');
-      auth.getContent(jwt)
+      auth.checkToken(jwt)
         .then((res) => {
           if(res) {
             setLoggedIn(true);
@@ -144,29 +174,30 @@ function App() {
     }
   }
 
-  function handleRegister({password, email}) {
-    auth.register(password, email)
+  function handleRegister(values) {
+    auth.register(values.password, values.email)
       .then((res) => {
         navigate('/log-in', {replace: true});
         setIsRegistered(true);
-        setIsRegisteredPopupOpen(true);
       })
       .catch((err) => {
         setIsRegistered(false);
-        setIsRegisteredPopupOpen(true);
         console.log(err);
+      })
+      .finally(() => {
+        setIsRegisteredPopupOpen(true);
       })
   }
 
-  function handleLogin({password, email}) {
-    if (!password || !email) {
+  function handleLogin(values) {
+    if (!values.password || !values.email) {
       return;
     }
-    auth.authorize(password, email)
+    auth.authorize(values.password, values.email)
       .then((res) => {
         if (res.token) {
           localStorage.setItem('jwt', res.token);
-          setUserEmail(email);
+          setUserEmail(values.email);
           setLoggedIn(true);
           navigate('/', {replace: true});
         }
@@ -195,9 +226,9 @@ function App() {
             <Route path='*' element={loggedIn ? <Navigate to='/' /> : <Navigate to='/log-in' />}/>
           </Routes>
           <Footer />
-          <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} />
-          <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} />
-          <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} />
+          <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar} isLoading={isLoading} />
+          <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser} isLoading={isLoading} />
+          <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit} isLoading={isLoading} />
           <ImagePopup card={selectedCard} onClose={closeAllPopups} />
           <InfoTooltip isOpen={isRegisteredPopupOpen} onClose={closeAllPopups} isRegistered={isRegistered} />
         </CurrentUserContext.Provider>

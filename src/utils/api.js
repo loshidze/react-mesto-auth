@@ -4,6 +4,11 @@ class Api {
     this._headers = headers;
   }
 
+  _request(url, options) {
+    return fetch(url, options).then(this._checkResponse)
+  }
+
+
   _checkResponse(res) {
     if (res.ok) {
       return res.json();
@@ -12,44 +17,39 @@ class Api {
   }
 
   getProfileInfo() {
-    return fetch(`${this._url}/users/me`, {
+    return this._request(`${this._url}/users/me`, {
         headers: this._headers
     })
-    .then(this._checkResponse);
   }
 
   setProfileInfo(data) {
-    return fetch(`${this._url}/users/me`, {
+    return this._request(`${this._url}/users/me`, {
       headers: this._headers,
       method: 'PATCH',
       body: JSON.stringify(data)
-  })
-    .then(this._checkResponse);
+    })
   }
 
   getCards() {
-    return fetch(`${this._url}/cards`, {
+    return this._request(`${this._url}/cards`, {
       headers: this._headers
     })
-    .then(this._checkResponse);
   }
 
   setCard(data) {
-    return fetch(`${this._url}/cards`, {
+    return this._request(`${this._url}/cards`, {
       headers: this._headers,
       method: 'POST',
       body: JSON.stringify(data)
-  })
-    .then(this._checkResponse);
+    })
   }
 
   changeAvatar(data) {
-    return fetch(`${this._url}/users/me/avatar`, {
+    return this._request(`${this._url}/users/me/avatar`, {
       headers: this._headers,
       method: 'PATCH',
       body: JSON.stringify(data)
-  })
-    .then(this._checkResponse);
+    })
   }
 
   toggleLikeCard(id, isLiked) {
@@ -61,27 +61,24 @@ class Api {
   }
 
   like(id) {
-    return fetch(`${this._url}/cards/${id}/likes`, {
+    return this._request(`${this._url}/cards/${id}/likes`, {
       headers: this._headers,
       method: 'PUT'
-  })
-    .then(this._checkResponse);
+    })
   }
 
   dislike(id) {
-    return fetch(`${this._url}/cards/${id}/likes`, {
+    return this._request(`${this._url}/cards/${id}/likes`, {
       headers: this._headers,
       method: 'DELETE'
-  })
-    .then(this._checkResponse);
+    })
   }
 
   deleteCard(id) {
-    return fetch(`${this._url}/cards/${id}`, {
+    return this._request(`${this._url}/cards/${id}`, {
       headers: this._headers,
       method: 'DELETE'
-  })
-    .then(this._checkResponse);
+    })
   }
 }
 
